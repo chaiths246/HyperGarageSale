@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -20,7 +23,8 @@ import java.util.ArrayList;
 public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder>{
     private ArrayList<BrowsePosts> mDataset;
     private OnItemClickListener clickListener;
-
+    Bitmap theImage;
+    Bitmap bitmap;
 
 Context context;
 
@@ -84,8 +88,8 @@ Context context;
         holder.mTitle.setText(mDataset.get(position).mTitle);
         holder.mPrice.setText(mDataset.get(position).mPrice);
         ByteArrayInputStream imageStream = new ByteArrayInputStream(mDataset.get(position).mImage);
-        Bitmap theImage = BitmapFactory.decodeStream(imageStream);
-
+         theImage = BitmapFactory.decodeStream(imageStream);
+bitmap=theImage;
         holder.mImage.setImageBitmap(theImage);
 
         holder.setClickListener(new OnItemClickListener() {
@@ -94,11 +98,13 @@ Context context;
 
                 Intent i=new Intent(context,PostDetailsActivity.class);
                 i.putExtra("Name",mDataset.get(position).mTitle);
+                i.putExtra("Price",mDataset.get(position).mPrice);
 
-                i.putExtra("Position",mDataset.get(position).mPrice);
-                ByteArrayInputStream imageStream = new ByteArrayInputStream(mDataset.get(position).mImage);
-                
-                i.putExtra("Image",mDataset.get(position).mImage);
+                ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream);
+                byte[] byteArray = bStream.toByteArray();
+
+                i.putExtra("Image", byteArray);
                 context.startActivity(i);
 
             }

@@ -27,16 +27,17 @@ public class PostDetailsActivity extends AppCompatActivity {
 
         Intent i = getIntent();
         final String name = i.getExtras().getString("Name");
-        final String pos = i.getExtras().getString("Position");
-
-       final String image_path = i.getExtras().getString("Image");
-        Bitmap bitmap = BitmapFactory.decodeFile(image_path);
+        final String pos = i.getExtras().getString("Price");
 
 
-        prod_image.setImageBitmap(bitmap);
+
+        byte[] byteArray = getIntent().getByteArrayExtra("Image");
+        Bitmap  bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+        prod_image.setImageBitmap(bmp);
 
 
         prod_name.setText("NAME :   " + name);
-        prod_price.setText("POSITION : " + pos);
+        prod_price.setText("Price : " + pos);
+
     }
 }

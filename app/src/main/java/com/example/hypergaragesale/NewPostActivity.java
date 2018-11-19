@@ -4,6 +4,7 @@ package com.example.hypergaragesale;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -21,6 +22,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
 
 import android.support.v7.app.AppCompatActivity;
@@ -53,12 +55,12 @@ public class NewPostActivity extends AppCompatActivity {
     private EditText descText;
     private EditText priceText;
     private ImageView imageView;
-    private Uri file;
+
     final int REQUEST_CODE_GALLERY = 999;
     final int CAMERA_REQUEST = 0;
     private Intent pictureActionIntent = null;
     Bitmap bitmap;
-
+Context context;
     String selectedImagePath;
 
     @Override
@@ -182,7 +184,7 @@ public class NewPostActivity extends AppCompatActivity {
                         File f = new File(android.os.Environment
                                 .getExternalStorageDirectory(), "temp.jpg");
                         intent.putExtra(MediaStore.EXTRA_OUTPUT,
-                                Uri.fromFile(f));
+                                FileProvider.getUriForFile(getApplicationContext(), "com.example.hypergaragesale.fileprovider", f));
 
                         startActivityForResult(intent,
                                 CAMERA_REQUEST);
