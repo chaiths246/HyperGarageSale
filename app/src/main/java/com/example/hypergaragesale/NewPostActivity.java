@@ -35,6 +35,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -43,7 +44,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 
 public class NewPostActivity extends AppCompatActivity {
@@ -55,37 +59,45 @@ public class NewPostActivity extends AppCompatActivity {
     private EditText descText;
     private EditText priceText;
     private ImageView imageView;
-
+    private GridView grid;
+    private List<String> listOfImagesPath;
     final int REQUEST_CODE_GALLERY = 999;
     final int CAMERA_REQUEST = 0;
     private Intent pictureActionIntent = null;
     Bitmap bitmap;
-Context context;
+    Context context;
     String selectedImagePath;
+    public static final String GridViewDemo_ImagePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/HyperGarage/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_post);
-
+imageView=(ImageView)findViewById(R.id.image123);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        titleText = (EditText)findViewById(R.id.textView_title);
-        descText = (EditText)findViewById(R.id.textView_desc);
-        priceText = (EditText)findViewById(R.id.textView_price);
-        takePictureButton=(Button)findViewById(R.id.take_picture);
-        imageView = (ImageView) findViewById(R.id.imageview);
+        titleText = (EditText) findViewById(R.id.textView_title);
+        descText = (EditText) findViewById(R.id.textView_desc);
+        priceText = (EditText) findViewById(R.id.textView_price);
+        takePictureButton = (Button) findViewById(R.id.take_picture);
+
+        grid = (GridView) findViewById(R.id.gridviewimg);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             takePictureButton.setEnabled(false);
-            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE }, 0);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
         // Gets the data repository in write mode
         PostsDbHelper mDbHelper = new PostsDbHelper(this);
         db = mDbHelper.getWritableDatabase();
+        listOfImagesPath = null;
+        listOfImagesPath = RetriveCapturedImagePath();
+        if (listOfImagesPath != null) {
+            grid.setAdapter(new ImageListAdapter(this, listOfImagesPath));
+        }
 
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -95,12 +107,29 @@ Context context;
         });
     }
 
+    private List<String> RetriveCapturedImagePath() {
+        List<String> tFileList = new ArrayList<String>();
+        File f = new File(GridViewDemo_ImagePath);
+        if (f.exists()) {
+            File[] files = f.listFiles();
+            Arrays.sort(files);
+
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                if (file.isDirectory())
+                    continue;
+                tFileList.add(file.getPath());
+            }
+        }
+        return tFileList;
+    }
+
+
     private void showSnackBar(View v) {
         if (v == null) {
             Snackbar.make(findViewById(R.id.myCoordinatorLayout), R.string.new_post_snackbar,
                     Snackbar.LENGTH_SHORT).show();
-        }
-        else {
+        } else {
             Snackbar.make(v, R.string.new_post_snackbar,
                     Snackbar.LENGTH_SHORT).show();
         }
@@ -271,7 +300,7 @@ Context context;
             if (data != null) {
 
                 Uri selectedImage = data.getData();
-                String[] filePath = { MediaStore.Images.Media.DATA };
+                String[] filePath = {MediaStore.Images.Media.DATA};
                 Cursor c = getContentResolver().query(selectedImage, filePath,
                         null, null, null);
                 c.moveToFirst();
@@ -280,13 +309,12 @@ Context context;
                 c.close();
 
                 if (selectedImagePath != null) {
-                  //  txt_image_path.setText(selectedImagePath);
+                    //  txt_image_path.setText(selectedImagePath);
                 }
 
                 bitmap = BitmapFactory.decodeFile(selectedImagePath); // load
                 // preview image
                 bitmap = Bitmap.createScaledBitmap(bitmap, 400, 400, false);
-
 
 
                 imageView.setImageBitmap(bitmap);
@@ -340,10 +368,7 @@ Context context;
                 selectedImagePath = file.getAbsolutePath();
 
 
-
-            }
-
-            catch (Exception e) {
+            } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
@@ -351,9 +376,14 @@ Context context;
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        listOfImagesPath = null;
+        listOfImagesPath = RetriveCapturedImagePath();
+        if (listOfImagesPath != null) {
+            grid.setAdapter(new ImageListAdapter(this, listOfImagesPath));
+
+        }
+
 
     }
-
-
 }
 
