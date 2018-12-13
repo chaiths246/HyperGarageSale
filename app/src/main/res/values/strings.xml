@@ -7,4 +7,8 @@
     <string name="new_post_snackbar">Thanks for posting!</string>
     <string name="title_activity_browse_posts">BrowsePostsActivity</string>
     <string name="title_activity_post_details">PostDetailsActivity</string>
+    <string name="add_location">Add Location</string>
+    <string name="search_here">Search Here</string>
+    <string name="title_activity_search_results">SearchResultsActivity</string>
+
 </resources>

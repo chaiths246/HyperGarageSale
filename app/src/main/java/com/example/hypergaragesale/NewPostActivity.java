@@ -14,10 +14,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -48,10 +52,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
-public class NewPostActivity extends AppCompatActivity {
-
+public class NewPostActivity extends AppCompatActivity implements LocationListener {
     private SQLiteDatabase db;
     private ContentValues values;
     private Button takePictureButton;
@@ -67,37 +71,78 @@ public class NewPostActivity extends AppCompatActivity {
     Bitmap bitmap;
     Context context;
     String selectedImagePath;
+    private Button add_location;
+    LocationManager locationManager;
+    String data;
+    String lat;
+    String longititude;
+    private TextToSpeech textToSpeech;
+
+    private static final String[] INITIAL_PERMS = {
+            Manifest.permission.ACCESS_FINE_LOCATION};
+    private static final String[] LOCATION_PERMS = {
+            Manifest.permission.ACCESS_FINE_LOCATION
+    };
+    private static final int INITIAL_REQUEST = 1337;
     public static final String GridViewDemo_ImagePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/HyperGarage/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_post);
-imageView=(ImageView)findViewById(R.id.image123);
+        imageView = (ImageView) findViewById(R.id.image123);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
 
+        add_location = (Button) findViewById(R.id.location);
         titleText = (EditText) findViewById(R.id.textView_title);
         descText = (EditText) findViewById(R.id.textView_desc);
         priceText = (EditText) findViewById(R.id.textView_price);
         takePictureButton = (Button) findViewById(R.id.take_picture);
-
         grid = (GridView) findViewById(R.id.gridviewimg);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        int PERMISSION_ALL = 1;
+        String[] PERMISSIONS = {
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                android.Manifest.permission.CAMERA,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        };
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            takePictureButton.setEnabled(false);
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+        if (!hasPermissions(this, PERMISSIONS)) {
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
+
+
         // Gets the data repository in write mode
         PostsDbHelper mDbHelper = new PostsDbHelper(this);
         db = mDbHelper.getWritableDatabase();
         listOfImagesPath = null;
-        listOfImagesPath = RetriveCapturedImagePath();
-        if (listOfImagesPath != null) {
-            grid.setAdapter(new ImageListAdapter(this, listOfImagesPath));
-        }
+        // listOfImagesPath = RetriveCapturedImagePath();
+//        if (listOfImagesPath != null) {
+//            grid.setAdapter(new ImageListAdapter(this, listOfImagesPath));
+//        }
+
+        textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+                    int ttsLang = textToSpeech.setLanguage(Locale.US);
+
+                    if (ttsLang == TextToSpeech.LANG_MISSING_DATA
+                            || ttsLang == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.e("TTS", "The Language is not supported!");
+                    } else {
+                        Log.i("TTS", "Language Supported.");
+                    }
+                    Log.i("TTS", "Initialization success.");
+                } else {
+                    Toast.makeText(getApplicationContext(), "TTS Initialization failed!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
 
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -105,7 +150,49 @@ imageView=(ImageView)findViewById(R.id.image123);
             }
 
         });
+        add_location.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                getLocation();
+
+
+            }
+        });
     }
+
+    public static boolean hasPermissions(Context context, String... permissions) {
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public void getLocation() {
+        try {
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            Location location = null;
+            if (locationManager != null) {
+                //     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+//                Location location = null;
+//                if (mlocManager!= null) {
+                location = locationManager
+                        .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                if (location != null) {
+                    lat = "" + location.getLatitude();
+                    longititude = "" + location.getLongitude();
+
+                }
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private List<String> RetriveCapturedImagePath() {
         List<String> tFileList = new ArrayList<String>();
@@ -146,6 +233,8 @@ imageView=(ImageView)findViewById(R.id.image123);
         values.put(Posts.PostEntry.COLUMN_NAME_DESCRIPTION, descText.getText().toString());
         values.put(Posts.PostEntry.COLUMN_NAME_PRICE, priceText.getText().toString());
         values.put(Posts.PostEntry.COLUMN_NAME_IMAGE, imageViewToByte(imageView));
+        values.put(Posts.PostEntry.COLUMN_NAME_LATITUDE, lat);
+        values.put(Posts.PostEntry.COLUMN_NAME_LANGITUDE, longititude);
 
 
         // Insert the new row, returning the primary key value of the new row
@@ -177,7 +266,17 @@ imageView=(ImageView)findViewById(R.id.image123);
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_new_post) {
             showSnackBar(null);
-            addPost();
+            if (!titleText.getText().toString().equals("") && !priceText.getText().toString().equals("")) {
+                addPost();
+                int speechStatus = textToSpeech.speak("Thank you for adding" + titleText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
+
+                if (speechStatus == TextToSpeech.ERROR) {
+                    Log.e("TTS", "Error in converting Text to Speech!");
+                }
+            } else {
+                Toast.makeText(this, "Please enter all fields", Toast.LENGTH_SHORT).show();
+            }
+
         }
         return super.onOptionsItemSelected(item);
     }
@@ -381,8 +480,43 @@ imageView=(ImageView)findViewById(R.id.image123);
         if (listOfImagesPath != null) {
             grid.setAdapter(new ImageListAdapter(this, listOfImagesPath));
 
+
         }
 
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+//  lat=""+location.getLatitude();
+//  lang=""+location.getLongitude();
+
+
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        Toast.makeText(NewPostActivity.this, "Please Enable GPS and Internet", Toast.LENGTH_SHORT).show();
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
 
     }
 }

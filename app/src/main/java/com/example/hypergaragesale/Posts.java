@@ -17,6 +17,9 @@ public class Posts {
         public static final String COLUMN_NAME_DESCRIPTION = "decription";
         public static final String COLUMN_NAME_PRICE = "price";
         public final static String COLUMN_NAME_IMAGE = "image";
+        public final static String COLUMN_NAME_LATITUDE="latitude";
+        public final static String COLUMN_NAME_LANGITUDE="langitude";
+
 
     }
 }

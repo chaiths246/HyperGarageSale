@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,29 +21,28 @@ import java.util.ArrayList;
 /**
  * Created by Taral on 3/11/2016.
  */
-public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder>{
+public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> {
     private ArrayList<BrowsePosts> mDataset;
     private OnItemClickListener clickListener;
     Bitmap theImage;
     Bitmap bitmap;
-
-Context context;
-
+    Context context;
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
-    public static class ViewHolder extends RecyclerView.ViewHolder  implements View.OnClickListener{
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         // each data item is just a string in this case
         public TextView mTitle;
         public TextView mPrice;
         public ImageView mImage;
+
         private OnItemClickListener clickListener;
 
         public ViewHolder(View view) {
             super(view);
             mTitle = (TextView) itemView.findViewById(R.id.titleView);
             mPrice = (TextView) itemView.findViewById(R.id.priceView);
-            mImage=(ImageView)itemView.findViewById(R.id.image);
+            mImage = (ImageView) itemView.findViewById(R.id.image);
 
             itemView.setTag(itemView);
             itemView.setOnClickListener(this);
@@ -54,17 +54,17 @@ Context context;
             if (clickListener != null) clickListener.onClick(view, getAdapterPosition());
 
 
-
         }
+
         public void setClickListener(OnItemClickListener itemClickListener) {
             this.clickListener = itemClickListener;
         }
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public PostsAdapter(ArrayList<BrowsePosts> myDataset,Context context) {
+    public PostsAdapter(ArrayList<BrowsePosts> myDataset, Context context) {
         mDataset = myDataset;
-        this.context=context;
+        this.context = context;
     }
 
     // Create new views (invoked by the layout manager)
@@ -78,8 +78,6 @@ Context context;
         ViewHolder vh = new ViewHolder(v);
         return vh;
     }
-
-
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
@@ -88,17 +86,18 @@ Context context;
         holder.mTitle.setText(mDataset.get(position).mTitle);
         holder.mPrice.setText(mDataset.get(position).mPrice);
         ByteArrayInputStream imageStream = new ByteArrayInputStream(mDataset.get(position).mImage);
-         theImage = BitmapFactory.decodeStream(imageStream);
-bitmap=theImage;
+        theImage = BitmapFactory.decodeStream(imageStream);
+        bitmap = theImage;
         holder.mImage.setImageBitmap(theImage);
-
         holder.setClickListener(new OnItemClickListener() {
             @Override
             public void onClick(View view, int position) {
-
-                Intent i=new Intent(context,PostDetailsActivity.class);
-                i.putExtra("Name",mDataset.get(position).mTitle);
-                i.putExtra("Price",mDataset.get(position).mPrice);
+                Intent i = new Intent(context, PostDetailsActivity.class);
+                i.putExtra("Name", mDataset.get(position).mTitle);
+                i.putExtra("Price", mDataset.get(position).mPrice);
+                i.putExtra("Latitide", mDataset.get(position).latitude);
+                i.putExtra("Langitude", mDataset.get(position).langitude);
+                i.putExtra("Description",mDataset.get(position).mDescription);
 
                 ByteArrayOutputStream bStream = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, bStream);
@@ -113,7 +112,6 @@ bitmap=theImage;
         });
 
     }
-
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override

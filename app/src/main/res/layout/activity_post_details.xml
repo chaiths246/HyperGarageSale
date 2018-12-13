@@ -24,35 +24,38 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:padding="10dp"
+            android:paddingTop="10dp"
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:textSize="24sp"
             android:id="@+id/product_name"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
+            android:textSize="24sp"
             android:id="@+id/product_price"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:singleLine="false"
+            android:textSize="24sp"
+            android:padding="10dp"
+            android:id="@+id/product_desc"/>
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
             android:padding="10dp"
             android:id="@+id/postdetail_image"/>
-        
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/image1"/>
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/image2"/>
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/image3"/>
 
-
+        <fragment
+            android:layout_marginTop="40dp"
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="500dp"
+            class="com.google.android.gms.maps.SupportMapFragment" />
     </LinearLayout>
     </ScrollView>
   
